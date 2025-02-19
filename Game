@@ -1,0 +1,85 @@
+import pygame
+import random
+
+# Initialize pygame
+pygame.init()
+
+# Game constants
+WIDTH, HEIGHT = 600, 800
+BALL_RADIUS = 10
+PADDLE_WIDTH, PADDLE_HEIGHT = 100, 10
+
+# Colors
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+
+# Create screen
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Simple Pinball Game")
+
+# Ball properties
+ball_x = WIDTH // 2
+ball_y = HEIGHT // 2
+ball_dx = 4 * random.choice((1, -1))
+ball_dy = -4
+
+# Paddle properties
+paddle_x = (WIDTH - PADDLE_WIDTH) // 2
+paddle_y = HEIGHT - 50
+paddle_speed = 8
+
+# Score
+score = 0
+font = pygame.font.Font(None, 36)
+
+# Main loop
+running = True
+while running:
+    pygame.time.delay(10)
+    screen.fill((0, 0, 0))
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # Move paddle
+    keys = pygame.key.get_pressed()
+    if keys[pygame.K_LEFT] and paddle_x > 0:
+        paddle_x -= paddle_speed
+    if keys[pygame.K_RIGHT] and paddle_x < WIDTH - PADDLE_WIDTH:
+        paddle_x += paddle_speed
+
+    # Move ball
+    ball_x += ball_dx
+    ball_y += ball_dy
+
+    # Ball collision with walls
+    if ball_x <= 0 or ball_x >= WIDTH - BALL_RADIUS:
+        ball_dx *= -1
+    if ball_y <= 0:
+        ball_dy *= -1
+
+    # Ball collision with paddle
+    if paddle_y <= ball_y + BALL_RADIUS <= paddle_y + PADDLE_HEIGHT and paddle_x <= ball_x <= paddle_x + PADDLE_WIDTH:
+        ball_dy *= -1
+        score += 1
+
+    # Ball out of bounds
+    if ball_y > HEIGHT:
+        ball_x, ball_y = WIDTH // 2, HEIGHT // 2
+        ball_dx, ball_dy = 4 * random.choice((1, -1)), -4
+        score = 0  # Reset score
+
+    # Draw ball and paddle
+    pygame.draw.circle(screen, BLUE, (ball_x, ball_y), BALL_RADIUS)
+    pygame.draw.rect(screen, RED, (paddle_x, paddle_y, PADDLE_WIDTH, PADDLE_HEIGHT))
+
+    # Draw score
+    score_text = font.render(f"Score: {score}", True, WHITE)
+    screen.blit(score_text, (10, 10))
+
+    pygame.display.update()
+
+pygame.quit()
